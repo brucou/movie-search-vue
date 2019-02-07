@@ -1,18 +1,13 @@
+import Search from "./Search"
+import Vue from 'vue'
 import {
-  events,
-  LOADING,
-  NETWORK_ERROR,
-  POPULAR_NOW,
-  PROMPT,
-  screens,
-  SEARCH_RESULTS_FOR,
-  testIds,
-  COMMAND_RENDER
+  events, LOADING, NETWORK_ERROR, POPULAR_NOW, PROMPT, screens, SEARCH_RESULTS_FOR, testIds
 } from "./properties";
 import { createStateMachine, NO_OUTPUT } from "state-transducer";
 import emitonoff from "emitonoff";
 import { commandHandlers, effectHandlers, movieSearchFsmDef } from "./fsm";
 import { applyJSONpatch } from "./helpers";
+import { makeVueStateMachine } from "vue-state-driven";
 
 const options = { initialEvent: { [events.USER_NAVIGATED_TO_APP]: void 0 } };
 const {
@@ -51,19 +46,21 @@ function subjectFromEventEmitterFactory() {
   };
 }
 
-const vueRenderCommandHandler = {
-  [COMMAND_RENDER]: (next, params, effectHandlers, app) => {
-    const { screen, query, results, title, details, cast } = params;
-    const props = Object.assign({}, params, { next });
-
-    app.set(props);
-  }
-};
-const commandHandlersWithRender = Object.assign({}, commandHandlers, vueRenderCommandHandler);
+makeVueStateMachine({
+  name: 'App',
+  renderComponent: Search,
+  props: ["screen", "query", "results", "title", "details", "cast"],
+  fsm,
+  commandHandlers,
+  effectHandlers,
+  subjectFactory: subjectFromEventEmitterFactory,
+  options,
+  Vue
+});
 
 export default {
   name: "app",
-  data: function() {
+  data: function () {
     return {
       screen: void 0,
       query: "",
@@ -84,7 +81,7 @@ export default {
       SEARCH_RESULTS_FOR
     };
   },
-  mounted: function() {
+  mounted: function () {
     const app = this;
     this.eventSubject = subjectFromEventEmitterFactory();
     this.outputSubject = subjectFromEventEmitterFactory();
@@ -111,38 +108,38 @@ export default {
 
     this.options.initialEvent && this.eventSubject.next(this.options.initialEvent);
   },
-  destroyed: function() {
+  destroyed: function () {
     this.eventSubject.complete();
     this.outputSubject.complete();
   },
   computed: {
-    isDiscoveryMode: function() {
+    isDiscoveryMode: function () {
       return !this.query || this.query.length === 0;
     },
-    filteredResults: function() {
+    filteredResults: function () {
       return this.results && this.results.filter(result => result.backdrop_path);
     },
-    activePage: function() {
+    activePage: function () {
       return !this.screen ||
-        [
-          LOADING_SCREEN,
-          SEARCH_RESULTS_AND_LOADING_SCREEN,
-          SEARCH_ERROR_SCREEN,
-          SEARCH_RESULTS_SCREEN
-        ].indexOf(this.screen) > -1
+      [
+        LOADING_SCREEN,
+        SEARCH_RESULTS_AND_LOADING_SCREEN,
+        SEARCH_ERROR_SCREEN,
+        SEARCH_RESULTS_SCREEN
+      ].indexOf(this.screen) > -1
         ? "home"
         : "item";
     },
-    hasImdbId: function() {
+    hasImdbId: function () {
       return this.details && this.details.imdb_id;
     },
-    isLoadingResults: function() {
+    isLoadingResults: function () {
       return [LOADING_SCREEN, SEARCH_RESULTS_AND_LOADING_SCREEN].indexOf(this.screen) > -1;
     },
-    isErrorResults: function() {
+    isErrorResults: function () {
       return [SEARCH_ERROR_SCREEN].indexOf(this.screen) > -1;
     },
-    hasResults: function() {
+    hasResults: function () {
       return (
         [
           LOADING_SCREEN,
@@ -153,7 +150,7 @@ export default {
         ].indexOf(this.screen) > -1
       );
     },
-    hasMoviePage: function() {
+    hasMoviePage: function () {
       return (
         [
           SEARCH_RESULTS_WITH_MOVIE_DETAILS_AND_LOADING_SCREEN,
@@ -162,44 +159,44 @@ export default {
         ].indexOf(this.screen) > -1
       );
     },
-    isLoadingMovieDetails: function() {
+    isLoadingMovieDetails: function () {
       return [SEARCH_RESULTS_WITH_MOVIE_DETAILS_AND_LOADING_SCREEN].indexOf(this.screen) > -1;
     },
-    isErrorMovieDetails: function() {
+    isErrorMovieDetails: function () {
       return [SEARCH_RESULTS_WITH_MOVIE_DETAILS_ERROR].indexOf(this.screen) > -1;
     },
-    hasDetailsResults: function() {
+    hasDetailsResults: function () {
       return [SEARCH_RESULTS_WITH_MOVIE_DETAILS].indexOf(this.screen) > -1;
     }
   },
   methods: {
-    imageTmdbUrl: function(result) {
+    imageTmdbUrl: function (result) {
       return "http://image.tmdb.org/t/p/w300" + result.backdrop_path;
     },
-    imageTmdbDetailsUrl: function(details) {
+    imageTmdbDetailsUrl: function (details) {
       return "http://image.tmdb.org/t/p/w342" + details.poster_path;
     },
-    imageImdbUrl: function(details) {
+    imageImdbUrl: function (details) {
       return "https://www.imdb.com/title/" + details.imdb_id + "/";
     },
     // reminder : do not use fat arrow functions!
     // set allows to update the internal data for the component which triggers a redraw
-    set: function(stateObj) {
+    set: function (stateObj) {
       Object.keys(stateObj).forEach(key => (this[key] = stateObj[key]));
     },
-    QUERY_CHANGED: function(ev) {
+    QUERY_CHANGED: function (ev) {
       return this.next({ [QUERY_CHANGED]: ev.target.value });
     },
-    QUERY_RESETTED: function(ev) {
+    QUERY_RESETTED: function (ev) {
       return this.next({ [QUERY_CHANGED]: "" });
     },
-    MOVIE_SELECTED: function(result, ev) {
+    MOVIE_SELECTED: function (result, ev) {
       return this.next({ [MOVIE_SELECTED]: { movie: result } });
     },
-    MOVIE_DETAILS_DESELECTED: function(ev) {
+    MOVIE_DETAILS_DESELECTED: function (ev) {
       return this.next({ [MOVIE_DETAILS_DESELECTED]: void 0 });
     },
-    greet: function(event) {
+    greet: function (event) {
       // `this` inside methods points to the Vue instance
       alert("Hello " + this.name + "!");
       // `event` is the native DOM event

@@ -14,7 +14,8 @@
     "json-patch-es6": "2.0.9",
     "state-transducer": "0.10.2",
     "superagent": "4.1.0",
-    "vue": "^2.5.2"
+    "vue": "^2.5.2",
+    "vue-state-driven": "0.2.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
