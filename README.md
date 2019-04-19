@@ -12,7 +12,8 @@ front-end frameworks. So far, implementation exists for :
   - [react](https://codesandbox.io/s/kwn3lx2qx7)
   - [ivi](https://github.com/brucou/movie-search-app-ivi)
   - [svelte](https://github.com/brucou/movie-search-app-svelte)
-
+  - [dojo](https://codesandbox.io/s/jnvylz9jkw)
+  
 You can review the demo in the [codesandbox](https://codesandbox.io/s/p7xv6r1moq)
 
 # Lesson learnt
