@@ -16,6 +16,7 @@ front-end frameworks. So far, implementation exists for :
   
 You can review the demo in the [codesandbox](https://codesandbox.io/s/p7xv6r1moq)
 
+
 # Lesson learnt
 Porting the application to Vue proved reasonably manageable (a few hours) :
 - the IDE support (codesandbox) helped
