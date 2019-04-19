@@ -13,7 +13,7 @@ front-end frameworks. So far, implementation exists for :
   - [ivi](https://github.com/brucou/movie-search-app-ivi)
   - [svelte](https://github.com/brucou/movie-search-app-svelte)
 
-You can review the demo in the [codesandbox](https://codesandbox.io/s/ook2p400y6)
+You can review the demo in the [codesandbox](https://codesandbox.io/s/p7xv6r1moq)
 
 # Lesson learnt
 Porting the application to Vue proved reasonably manageable (a few hours) :
