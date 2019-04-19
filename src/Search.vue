@@ -1,5 +1,5 @@
 <template>
-  <div class="App uk-light uk-background-secondary" v-bind:data-activePage="activePage">
+  <div class="App uk-light uk-background-secondary" v-bind:data-active-page="activePage">
     <div class="App__view-container" v-on:click="MOVIE_DETAILS_DESELECTED">
       <div class="App__view uk-margin-top-small uk-margin-left uk-margin-right" data-page="home">
         <div class="HomePage">
@@ -20,17 +20,12 @@
                     v-bind:data-testid="QUERY_FIELD_TESTID"
             />
           </div>
-          <h3
-                  class="uk-heading-bullet uk-margin-remove-top"
-                  v-bind:data-testid="RESULTS_HEADER_TESTID"
-          >
+          <h3 class="uk-heading-bullet uk-margin-remove-top" v-bind:data-testid="RESULTS_HEADER_TESTID">
             {{ isDiscoveryMode ? POPULAR_NOW : SEARCH_RESULTS_FOR(query) }}
           </h3>
           <div class="ResultsContainer" v-bind:data-testid="RESULTS_CONTAINER_TESTID">
             <div v-if="isLoadingResults">{{ LOADING }}</div>
-            <div v-if="isErrorResults" v-bind:data-testid="NETWORK_ERROR_TESTID">
-              {{ NETWORK_ERROR }}
-            </div>
+            <div v-if="isErrorResults" v-bind:data-testid="NETWORK_ERROR_TESTID">{{ NETWORK_ERROR }}</div>
             <ul v-if="hasResults" class="uk-thumbnav">
               <li v-for="result in filteredResults" class="uk-margin-bottom">
                 <a
@@ -38,12 +33,8 @@
                         v-on:click="MOVIE_SELECTED(result, $event);"
                         v-bind:data-id="result.id"
                 >
-                  <div class="ResultsContainer__thumbnail-holder">
-                    <img v-bind:src="imageTmdbUrl(result)" alt="" />
-                  </div>
-                  <div class="ResultsContainer__caption uk-text-small uk-text-muted">
-                    {{ result.title }}
-                  </div>
+                  <div class="ResultsContainer__thumbnail-holder"><img v-bind:src="imageTmdbUrl(result)" alt="" /></div>
+                  <div class="ResultsContainer__caption uk-text-small uk-text-muted">{{ result.title }}</div>
                 </a>
               </li>
             </ul>
@@ -53,8 +44,8 @@
       <div class="App__view uk-margin-top-small uk-margin-left uk-margin-right" data-page="item">
         <div v-if="hasMoviePage">
           <h1>{{ title || (details && details.title) }}</h1>
-          <div v-if="isLoadingMovieDetails">{LOADING}</div>
-          <div v-if="isErrorMovieDetails">{NETWORK_ERROR}</div>
+          <div v-if="isLoadingMovieDetails">{{LOADING}}</div>
+          <div v-if="isErrorMovieDetails">{{NETWORK_ERROR}}</div>
           <div v-if="hasDetailsResults" class="MovieDetailsPage">
             <div class="MovieDetailsPage__img-container uk-margin-right" style="float: left">
               <img v-bind:src="imageTmdbDetailsUrl(details)" alt="" />
@@ -83,9 +74,7 @@
               <dd>{{ details.release_date }}</dd>
               <dt v-if="hasImdbId">IMDb URL</dt>
               <dd v-if="hasImdbId">
-                <a v-bind:href="imageImdbUrl(details)">
-                  {{ "https://www.imdb.com/title/" + details.imdb_id + "/" }}
-                </a>
+                <a v-bind:href="imageImdbUrl(details)"> {{ "https://www.imdb.com/title/" + details.imdb_id + "/" }} </a>
               </dd>
             </dl>
           </div>
@@ -94,7 +83,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
   import {
@@ -132,45 +120,10 @@
   } = screens;
   const { QUERY_CHANGED, MOVIE_SELECTED, MOVIE_DETAILS_DESELECTED } = events;
 
-  const fsm = createStateMachine(movieSearchFsmDef, {
-    updateState: applyJSONpatch,
-    debug: { console }
-  });
-
-  function subjectFromEventEmitterFactory() {
-    const eventEmitter = emitonoff();
-    const DUMMY_NAME_SPACE = "_";
-    const _ = DUMMY_NAME_SPACE;
-    const subscribers = [];
-
-    return {
-      next: x => eventEmitter.emit(_, x),
-      complete: () => subscribers.forEach(f => eventEmitter.off(_, f)),
-      subscribe: f => (subscribers.push(f), eventEmitter.on(_, f))
-    };
-  }
-
-  const vueRenderCommandHandler = {
-    [COMMAND_RENDER]: (next, params, effectHandlers, app) => {
-      const { screen, query, results, title, details, cast } = params;
-      const props = Object.assign({}, params, { next });
-
-      app.set(props);
-    }
-  };
-  const commandHandlersWithRender = Object.assign({}, commandHandlers, vueRenderCommandHandler);
-
   export default {
-    name: "app",
+    props: ["screen", "query", "results", "title", "details", "cast", "next"],
     data: function() {
       return {
-        screen: void 0,
-        query: "",
-        results: [],
-        title: "",
-        details: [],
-        cast: [],
-        next: void 0,
         RESULTS_CONTAINER_TESTID,
         QUERY_FIELD_TESTID,
         RESULTS_HEADER_TESTID,
@@ -183,37 +136,6 @@
         SEARCH_RESULTS_FOR
       };
     },
-    mounted: function() {
-      const app = this;
-      this.eventSubject = subjectFromEventEmitterFactory();
-      this.outputSubject = subjectFromEventEmitterFactory();
-      this.options = Object.assign({}, options);
-      const NO_ACTION = this.options.NO_ACTION || NO_OUTPUT;
-
-      // Set up execution of commands
-      this.eventSubject.subscribe(eventStruct => {
-        const actions = fsm(eventStruct);
-
-        if (actions === NO_ACTION) return;
-        actions.forEach(action => {
-          if (action === NO_ACTION) return;
-          const { command, params } = action;
-          commandHandlersWithRender[command](
-            this.eventSubject.next,
-            params,
-            effectHandlers,
-            app,
-            this.outputSubject
-          );
-        });
-      });
-
-      this.options.initialEvent && this.eventSubject.next(this.options.initialEvent);
-    },
-    destroyed: function() {
-      this.eventSubject.complete();
-      this.outputSubject.complete();
-    },
     computed: {
       isDiscoveryMode: function() {
         return !this.query || this.query.length === 0;
@@ -223,12 +145,9 @@
       },
       activePage: function() {
         return !this.screen ||
-        [
-          LOADING_SCREEN,
-          SEARCH_RESULTS_AND_LOADING_SCREEN,
-          SEARCH_ERROR_SCREEN,
-          SEARCH_RESULTS_SCREEN
-        ].indexOf(this.screen) > -1
+        [LOADING_SCREEN, SEARCH_RESULTS_AND_LOADING_SCREEN, SEARCH_ERROR_SCREEN, SEARCH_RESULTS_SCREEN].indexOf(
+          this.screen
+        ) > -1
           ? "home"
           : "item";
       },
@@ -297,19 +216,8 @@
       },
       MOVIE_DETAILS_DESELECTED: function(ev) {
         return this.next({ [MOVIE_DETAILS_DESELECTED]: void 0 });
-      },
-      greet: function(event) {
-        // `this` inside methods points to the Vue instance
-        alert("Hello " + this.name + "!");
-        // `event` is the native DOM event
-        if (event) {
-          alert(event.target.tagName);
-        }
       }
     }
   };
-
 </script>
-
-<style src="./uikit.css"></style>
 

@@ -1,5 +1,5 @@
 {
-  "name": "vue-cli-template",
+  "name": "movie-search-vue",
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "brucou <bruno.couriol@gmail.com>",
@@ -12,10 +12,10 @@
   "dependencies": {
     "emitonoff": "0.1.1",
     "json-patch-es6": "2.0.9",
-    "state-transducer": "0.10.2",
+    "state-transducer": "0.15.0",
     "superagent": "4.1.0",
     "vue": "^2.5.2",
-    "vue-state-driven": "0.2.0"
+    "vue-state-driven": "^0.7.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
