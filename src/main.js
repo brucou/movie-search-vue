@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { createStateMachine } from "state-transducer";
+import { createStateMachine } from "kingly";
 import { makeVueStateMachine } from "vue-state-driven";
 import emitonoff from "emitonoff";
 import { commandHandlers, effectHandlers, movieSearchFsmDef } from "./fsm";

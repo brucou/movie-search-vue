@@ -94,12 +94,7 @@
     screens,
     SEARCH_RESULTS_FOR,
     testIds,
-    COMMAND_RENDER
   } from "./properties";
-  import { createStateMachine, NO_OUTPUT } from "state-transducer";
-  import emitonoff from "emitonoff";
-  import { commandHandlers, effectHandlers, movieSearchFsmDef } from "./fsm";
-  import { applyJSONpatch } from "./helpers";
 
   const options = { initialEvent: { [events.USER_NAVIGATED_TO_APP]: void 0 } };
   const {
